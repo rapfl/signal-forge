@@ -266,3 +266,156 @@ vec3 scene(vec2 uv) {
   return col;
 }
 `;
+
+export const FILAMENT_VORTEX_GLSL = /* glsl */ `
+vec3 scene(vec2 uv) {
+  float e = u_evolve;
+  uv *= 1.18 - 0.15 * u_bass;
+  uv *= rot(0.12 * sin(e * 0.23));
+  float r = length(uv);
+  float a = atan(uv.y, uv.x);
+  float fibers = 0.0;
+  float mass = 0.0;
+
+  for (int i = 0; i < 22; i++) {
+    float fi = float(i);
+    float arm = a + fi * 2.399 + e * (0.11 + 0.006 * fi);
+    vec2 p = uv + 0.18 * vec2(cos(arm * 2.0), sin(arm * 3.0));
+    p *= rot(fi * 0.31 + e * 0.18 + r * 2.0);
+    float curl = sin(p.x * 22.0 + sin(p.y * 13.0 - e * 1.7) * 2.8);
+    float d = abs(p.y + 0.065 * curl) + abs(sin(r * 10.0 - fi)) * 0.012;
+    fibers += 0.0035 / (0.005 + d + r * 0.018);
+    mass += exp(-length(p) * (3.8 + 1.2 * sin(fi)));
+  }
+
+  float core = exp(-r * 2.2);
+  float t = fibers * 0.025 + mass * 0.14 + e * 0.055;
+  vec3 col = palette(t) * fibers * (0.34 + 0.16 * u_high);
+  col += palette(t + 0.42) * (core + mass * 0.18) * (0.18 + 0.12 * u_mid);
+  col *= 1.0 + 0.24 * u_beat;
+  return col;
+}
+`;
+
+export const PULSE_BEACON_GLSL = /* glsl */ `
+vec3 scene(vec2 uv) {
+  float e = u_evolve;
+  uv *= 1.32 - 0.2 * u_bass;
+  float r = length(uv);
+  float a = atan(uv.y, uv.x);
+  float spokeA = abs(sin(a * 24.0 + e * 0.9 + sin(r * 7.0) * 1.5));
+  float spokeB = abs(sin(a * 11.0 - e * 1.4 + r * 13.0));
+  float spokes = pow(1.0 - min(spokeA, spokeB), 9.0);
+  float rings = 0.014 / (0.022 + abs(sin(r * 38.0 - e * 2.7 - u_beat * 1.6)));
+  float wave = 0.02 / (0.035 + abs(fract(r * 6.0 - e * 0.32 - u_bass * 0.2) - 0.5));
+  float bloom = exp(-r * 1.7) + spokes * (0.45 + 0.2 * u_high);
+  float t = a / TAU + r * 0.72 + e * 0.064;
+  vec3 col = palette(t) * (bloom * 0.36 + rings * 0.24);
+  col += palette(t + 0.38) * wave * (0.32 + 0.14 * u_beat);
+  col *= smoothstep(1.65, 0.02, r);
+  return col;
+}
+`;
+
+export const WORMHOLE_LATTICE_GLSL = /* glsl */ `
+vec3 scene(vec2 uv) {
+  float e = u_evolve;
+  float z = 0.0;
+  float glow = 0.0;
+  float depth = 0.0;
+
+  for (int i = 0; i < 18; i++) {
+    float fi = float(i);
+    z = fi * 0.13 + e * 0.18 + u_zoom * 0.08;
+    vec2 p = uv / (0.28 + fract(z) * 1.6);
+    p *= rot(e * 0.08 + fi * 0.21);
+    p += vec2(sin(z * 4.0), cos(z * 3.0)) * 0.18;
+    vec2 cell = fract(p * 3.0) - 0.5;
+    float box = max(abs(cell.x), abs(cell.y));
+    float ring = abs(box - 0.32);
+    float radial = abs(length(p) - (0.45 + fract(z) * 0.7));
+    float d = min(ring, radial);
+    float fade = 1.0 - fi / 18.0;
+    glow += 0.006 * fade / (0.009 + d);
+    depth += fade * exp(-radial * 6.0);
+  }
+
+  float vignette = smoothstep(1.8, 0.15, length(uv));
+  float t = depth * 0.08 + e * 0.06 + u_bass * 0.08;
+  vec3 col = palette(t) * glow * (0.16 + 0.12 * u_high);
+  col += palette(t + 0.45) * depth * 0.08;
+  col *= vignette * (1.0 + 0.22 * u_beat);
+  return col;
+}
+`;
+
+export const CRYSTAL_TESSELLATION_GLSL = /* glsl */ `
+float polyDist(vec2 p, float n, float radius) {
+  float a = atan(p.y, p.x) + PI;
+  float seg = TAU / n;
+  return cos(floor(0.5 + a / seg) * seg - a) * length(p) - radius;
+}
+
+vec3 scene(vec2 uv) {
+  float e = u_evolve;
+  uv *= 1.48 - 0.14 * u_bass;
+  uv *= rot(e * 0.09);
+  float facets = 0.0;
+  float fill = 0.0;
+  vec2 p = uv;
+
+  for (int i = 0; i < 7; i++) {
+    float fi = float(i);
+    p = kaleido(p, 6.0 + mod(fi, 3.0));
+    p = abs(p) - vec2(0.32 + 0.03 * sin(e * 0.33 + fi), 0.18);
+    p *= rot(PI / 4.0 + 0.12 * sin(e * 0.19 + fi));
+    float n = 3.0 + mod(fi, 5.0);
+    float d = abs(polyDist(p, n, 0.34));
+    float line = 0.006 / (0.012 + d);
+    facets += line * pow(0.9, fi);
+    fill += exp(-d * 5.0) * pow(0.84, fi);
+    p *= 1.16 + 0.02 * sin(e + fi);
+  }
+
+  float t = fill * 0.16 + e * 0.062;
+  vec3 col = palette(t) * (0.12 + fill * 0.28);
+  col += palette(t + 0.34) * facets * (0.16 + 0.1 * u_high);
+  col *= 1.0 + 0.18 * u_beat;
+  return col;
+}
+`;
+
+export const ASTER_PRISM_GLSL = /* glsl */ `
+float starDist(vec2 p, float points, float inner, float outer) {
+  float a = atan(p.y, p.x);
+  float r = length(p);
+  float k = 0.5 + 0.5 * cos(a * points);
+  float target = mix(inner, outer, pow(k, 2.2));
+  return abs(r - target);
+}
+
+vec3 scene(vec2 uv) {
+  float e = u_evolve;
+  uv *= 1.26 - 0.14 * u_bass;
+  float r = length(uv);
+  float a = atan(uv.y, uv.x);
+  float rays = 0.0;
+  float glass = 0.0;
+
+  for (int i = 0; i < 6; i++) {
+    float fi = float(i);
+    vec2 p = uv * (1.0 + fi * 0.18);
+    p *= rot(e * (0.08 + fi * 0.012) + fi * PI / 10.0);
+    float d = starDist(p, 5.0 + mod(fi, 4.0), 0.2 + fi * 0.025, 0.72 - fi * 0.055);
+    rays += 0.006 / (0.012 + d) * pow(0.88, fi);
+    glass += exp(-d * 6.0) * pow(0.82, fi);
+  }
+
+  float spokes = pow(abs(sin(a * 10.0 - e * 1.3)), 10.0) * smoothstep(1.2, 0.05, r);
+  float t = a / TAU + glass * 0.1 + e * 0.065;
+  vec3 col = palette(t) * (glass * 0.24 + spokes * 0.42);
+  col += palette(t + 0.5) * rays * (0.18 + 0.12 * u_high);
+  col *= smoothstep(1.55, 0.02, r) * (1.0 + 0.2 * u_beat);
+  return col;
+}
+`;

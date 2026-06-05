@@ -3,9 +3,21 @@ import { Visualizer } from "./ui/Visualizer";
 import { Controls } from "./ui/Controls";
 import { ExportPanel } from "./ui/ExportPanel";
 import { Renderer } from "./gl/Renderer";
+import { SCENES } from "./gl/scenes";
 import { AudioEngine } from "./audio/AudioEngine";
 import { FeatureExtractor } from "./audio/FeatureExtractor";
 import { useStore } from "./state/store";
+
+const isFormTarget = (target: EventTarget | null) => {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  return (
+    el.isContentEditable ||
+    el.tagName === "INPUT" ||
+    el.tagName === "TEXTAREA" ||
+    el.tagName === "SELECT"
+  );
+};
 
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -80,6 +92,35 @@ export default function App() {
     if (document.fullscreenElement) document.exitFullscreen();
     else el.requestFullscreen?.();
   };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (isFormTarget(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        void togglePlay();
+        return;
+      }
+
+      const delta =
+        e.key === "ArrowRight" || e.key === "ArrowDown"
+          ? 1
+          : e.key === "ArrowLeft" || e.key === "ArrowUp"
+            ? -1
+            : 0;
+      if (!delta) return;
+
+      e.preventDefault();
+      const state = useStore.getState();
+      const current = SCENES.findIndex((scene) => scene.id === state.sceneId);
+      const next = (current + delta + SCENES.length) % SCENES.length;
+      state.setScene(SCENES[next].id);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
 
   return (
     <div className="app">

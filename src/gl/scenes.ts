@@ -3,16 +3,21 @@ import { KALI_GLSL } from "./shaders/kali.glsl";
 import { JULIA_GLSL } from "./shaders/julia.glsl";
 import { MANDELBOX_GLSL } from "./shaders/mandelbox.glsl";
 import {
+  ASTER_PRISM_GLSL,
+  CRYSTAL_TESSELLATION_GLSL,
+  FILAMENT_VORTEX_GLSL,
   FLOWING_VERTEX_GLSL,
   HAIRBALL_FIELD_GLSL,
   MERCURY_CELLS_GLSL,
   ORGANIC_ICOSAHEDRON_GLSL,
   PENTA_FLAKE_GLSL,
+  PULSE_BEACON_GLSL,
   RADIATION_RINGS_GLSL,
   REVOLVING_FLOWER_GLSL,
   RIPPLED_LINES_GLSL,
   TORUS_KNOT_GLSL,
   TRI_HEX_CORE_GLSL,
+  WORMHOLE_LATTICE_GLSL,
 } from "./shaders/experience.glsl";
 
 export interface Scene {
@@ -39,69 +44,99 @@ export const SCENES: Scene[] = [
   },
   {
     id: "mandelbox",
-    name: "Mandelbox Tunnel",
+    name: "Mandelbox Corridor",
     description: "Raymarched 3D fractal flythrough",
     fragmentSource: build(MANDELBOX_GLSL),
   },
   {
     id: "flowing-vertex",
-    name: "Flowing Vertex",
+    name: "Vertex Current",
     description: "Liquid folded vertex lattice",
     fragmentSource: build(FLOWING_VERTEX_GLSL),
   },
   {
     id: "organic-icosahedron",
-    name: "Organic Icosahedron",
+    name: "Soft Icosa Core",
     description: "Soft raymarched icosahedral form",
     fragmentSource: build(ORGANIC_ICOSAHEDRON_GLSL),
   },
   {
     id: "revolving-flower",
-    name: "Revolving Flower",
+    name: "Orbit Bloom",
     description: "Looping radial petal fractal",
     fragmentSource: build(REVOLVING_FLOWER_GLSL),
   },
   {
     id: "hairball-field",
-    name: "Hairball Field",
+    name: "Strand Field",
     description: "Curled filament attractor field",
     fragmentSource: build(HAIRBALL_FIELD_GLSL),
   },
   {
     id: "mercury-cells",
-    name: "Mercury Cells",
+    name: "Quicksilver Cells",
     description: "Organic metallic cell pattern",
     fragmentSource: build(MERCURY_CELLS_GLSL),
   },
   {
     id: "radiation-rings",
-    name: "Radiation Rings",
+    name: "Emitter Rings",
     description: "Pulsing radial ring emission",
     fragmentSource: build(RADIATION_RINGS_GLSL),
   },
   {
     id: "torus-knot",
-    name: "Torus Knot",
+    name: "Donut Knot",
     description: "Raymarched twisting torus loop",
     fragmentSource: build(TORUS_KNOT_GLSL),
   },
   {
     id: "penta-flake",
-    name: "Penta Flake",
+    name: "Pentaflake Lattice",
     description: "Recursive pentagonal flake",
     fragmentSource: build(PENTA_FLAKE_GLSL),
   },
   {
     id: "rippled-lines",
-    name: "Rippled Lines",
+    name: "Line Ripple Field",
     description: "Interference lines and circular ripples",
     fragmentSource: build(RIPPLED_LINES_GLSL),
   },
   {
     id: "tri-hex-core",
-    name: "Tri-Hex Core",
+    name: "Triangle-Hex Core",
     description: "Triangle and hexagon folding core",
     fragmentSource: build(TRI_HEX_CORE_GLSL),
+  },
+  {
+    id: "filament-vortex",
+    name: "Filament Vortex",
+    description: "Dense curled strand vortex",
+    fragmentSource: build(FILAMENT_VORTEX_GLSL),
+  },
+  {
+    id: "pulse-beacon",
+    name: "Pulse Beacon",
+    description: "Concentric bursts and spoke flares",
+    fragmentSource: build(PULSE_BEACON_GLSL),
+  },
+  {
+    id: "wormhole-lattice",
+    name: "Wormhole Lattice",
+    description: "Forward-moving tiled depth field",
+    fragmentSource: build(WORMHOLE_LATTICE_GLSL),
+  },
+  {
+    id: "crystal-tessellation",
+    name: "Crystal Tessellation",
+    description: "Rotating polygon cells and nested facets",
+    fragmentSource: build(CRYSTAL_TESSELLATION_GLSL),
+  },
+  {
+    id: "aster-prism",
+    name: "Aster Prism",
+    description: "Layered pointed radial crystal",
+    fragmentSource: build(ASTER_PRISM_GLSL),
   },
 ];
 
