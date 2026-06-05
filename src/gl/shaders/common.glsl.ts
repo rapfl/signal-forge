@@ -74,11 +74,13 @@ float fbm(vec2 p) {
 export const MAIN_GLSL = /* glsl */ `
 void main() {
   vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
+  float boom = smoothstep(0.0, 1.0, u_beat);
+  uv *= 1.0 - 0.13 * boom;
   vec3 col = scene(uv);
   float vig = 1.0 - 0.25 * dot(uv, uv);
   col *= vig;
+  col *= 1.0 + 0.08 * boom;
   col = pow(max(col, 0.0), vec3(0.4545)); // linear -> sRGB-ish
   fragColor = vec4(col, 1.0);
 }
 `;
-

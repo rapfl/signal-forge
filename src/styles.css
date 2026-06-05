@@ -68,6 +68,28 @@ body,
   max-width: 360px;
 }
 
+.stage-title {
+  position: absolute;
+  left: 50%;
+  top: 9%;
+  transform: translateX(-50%);
+  max-width: min(86vw, 980px);
+  color: transparent;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: clamp(34px, 7vw, 96px);
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 0 28px rgba(90, 247, 216, 0.22);
+  z-index: 2;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -162,6 +184,26 @@ section {
   text-overflow: ellipsis;
 }
 
+.text-input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 9px 10px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.text-input:focus {
+  border-color: var(--accent);
+  background: rgba(179, 136, 255, 0.09);
+}
+.text-input::placeholder {
+  color: var(--muted);
+}
+
 .transport {
   gap: 6px;
 }
@@ -188,11 +230,129 @@ section {
   border-radius: 999px;
   cursor: pointer;
   font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .chip.active {
   background: rgba(179, 136, 255, 0.22);
   border-color: var(--accent);
   color: #fff;
+}
+
+.mode-thumb {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 5px;
+  background: #151222;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.55);
+}
+.mode-thumb::before,
+.mode-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.mode-thumb.mandala {
+  background:
+    repeating-conic-gradient(from 20deg, #5af7d8 0 8deg, #b388ff 8deg 16deg, #111426 16deg 24deg),
+    radial-gradient(circle, #fff 0 6%, transparent 7%);
+}
+.mode-thumb.spiral {
+  background:
+    repeating-radial-gradient(circle at 62% 48%, transparent 0 3px, #5af7d8 4px 5px, #b388ff 6px 7px),
+    conic-gradient(from 90deg, #0a0814, #2ee6c8, #b388ff, #0a0814);
+}
+.mode-thumb.tunnel {
+  background:
+    radial-gradient(ellipse at center, #07060c 0 12%, #6c52cc 13% 18%, transparent 19%),
+    repeating-radial-gradient(ellipse at center, #5af7d8 0 2px, #5b368c 3px 5px, #111426 6px 9px);
+}
+.mode-thumb.vertex {
+  background:
+    linear-gradient(45deg, transparent 44%, #5af7d8 45% 48%, transparent 49%),
+    linear-gradient(-45deg, transparent 44%, #b388ff 45% 48%, transparent 49%),
+    radial-gradient(circle at 50% 50%, #fff 0 6%, #5af7d8 7% 12%, transparent 13%),
+    #111426;
+}
+.mode-thumb.ico {
+  background:
+    linear-gradient(35deg, transparent 40%, rgba(255,255,255,0.5) 41% 43%, transparent 44%),
+    linear-gradient(-35deg, transparent 40%, rgba(90,247,216,0.6) 41% 43%, transparent 44%),
+    radial-gradient(circle at 50% 52%, #b388ff 0 18%, #5af7d8 19% 38%, #151222 39%);
+}
+.mode-thumb.flower {
+  background:
+    repeating-conic-gradient(from 10deg, #5af7d8 0 18deg, #b388ff 18deg 36deg, #151222 36deg 45deg),
+    radial-gradient(circle, #fff 0 8%, transparent 9%);
+}
+.mode-thumb.hairball {
+  background:
+    repeating-conic-gradient(from 30deg, transparent 0 6deg, rgba(90,247,216,0.9) 7deg 8deg, transparent 9deg 14deg),
+    radial-gradient(circle, #b388ff 0 14%, #151222 45%);
+}
+.mode-thumb.cells {
+  background:
+    radial-gradient(circle at 25% 35%, #5af7d8 0 10%, transparent 11%),
+    radial-gradient(circle at 62% 58%, #b388ff 0 13%, transparent 14%),
+    radial-gradient(circle at 80% 24%, #76ff8f 0 9%, transparent 10%),
+    repeating-radial-gradient(circle, #2b213d 0 4px, #151222 5px 8px);
+}
+.mode-thumb.rings {
+  background:
+    repeating-radial-gradient(circle, #5af7d8 0 1px, transparent 2px 4px, #b388ff 5px 6px, transparent 7px 10px),
+    #111426;
+}
+.mode-thumb.torus {
+  background:
+    radial-gradient(ellipse at 50% 52%, transparent 0 18%, #5af7d8 19% 28%, #b388ff 29% 38%, transparent 39%),
+    radial-gradient(ellipse at 50% 52%, #111426 0 45%, #38275a 46%);
+}
+.mode-thumb.penta {
+  background:
+    conic-gradient(from 18deg, #5af7d8 0 20%, #151222 20% 24%, #b388ff 24% 44%, #151222 44% 48%, #76ff8f 48% 68%, #151222 68% 72%, #5af7d8 72%),
+    radial-gradient(circle, #111426 0 24%, transparent 25%);
+}
+.mode-thumb.ripple {
+  background:
+    repeating-linear-gradient(8deg, transparent 0 4px, #5af7d8 5px 6px, transparent 7px 11px),
+    repeating-radial-gradient(circle at 40% 45%, transparent 0 5px, #b388ff 6px 7px, transparent 8px 12px),
+    #111426;
+}
+.mode-thumb.trihex {
+  background:
+    conic-gradient(from 30deg, #5af7d8 0 16.6%, #25203b 16.6% 33.2%, #b388ff 33.2% 49.8%, #25203b 49.8% 66.4%, #76ff8f 66.4% 83%, #25203b 83%),
+    radial-gradient(circle, #111426 0 16%, transparent 17%);
+}
+
+.chip .mode-thumb {
+  display: block;
+  width: 34px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.55), 0 0 10px rgba(90, 247, 216, 0.08);
+}
+.chip .mode-thumb.loading {
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent),
+    #151222;
+  background-size: 200% 100%;
+  animation: thumb-shimmer 1.1s linear infinite;
+}
+
+@keyframes thumb-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .slider-row {

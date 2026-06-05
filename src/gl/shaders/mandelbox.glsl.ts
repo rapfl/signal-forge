@@ -1,31 +1,32 @@
-// Raymarched mandelbox — a 3D folding fractal. Rewritten for "human consumption":
-// the camera ORBITS smoothly (no teleporting), the surface is properly lit (diffuse +
-// rim + ambient occlusion + soft fog) instead of additive glow soup, and everything
-// moves slowly. Bass gives a gentle scale breathe; the fractal morphs via u_evolve.
+// Raymarched mandelbox — a 3D folding fractal with a conservative flythrough camera.
 export const MANDELBOX_GLSL = /* glsl */ `
 float de(vec3 p, out float trap) {
-  vec3 z = p;
-  // The fold scale is the mandelbox's master shape knob — swinging it across ~1.75..2.45
-  // continuously re-forms the whole structure (chambers, lattices, spires).
-  float scale = 2.2 + 0.28 * sin(u_evolve * 0.13)
-              + 0.1 * sin(u_evolve * 0.31) + 0.16 * u_bass + 0.08 * u_mid;
+  vec3 q = p;
+  q.xy *= rot(q.z * 0.11 + u_evolve * 0.035);
+  q.z = mod(q.z + 3.0, 6.0) - 3.0;
+  vec3 z = q;
+  float scale = 2.05 + 0.16 * sin(u_evolve * 0.13)
+              + 0.06 * sin(u_evolve * 0.31) + 0.08 * u_bass + 0.04 * u_mid;
   float dr = 1.0;
   trap = 1e10;
-  const int IT = 11;
+  const int IT = 8;
   for (int i = 0; i < IT; i++) {
-    z = clamp(z, -1.0, 1.0) * 2.0 - z;        // box fold
+    z = clamp(z, -1.0, 1.0) * 2.0 - z;
     float r2 = dot(z, z);
-    if (r2 < 0.25) { float t = 4.0; z *= t; dr *= t; }       // sphere fold
+    if (r2 < 0.25) { float t = 4.0; z *= t; dr *= t; }
     else if (r2 < 1.0) { float t = 1.0 / r2; z *= t; dr *= t; }
-    z = z * scale + p;
+    z = z * scale + q;
     dr = dr * abs(scale) + 1.0;
-    trap = min(trap, r2);                       // orbit trap for coloring
+    trap = min(trap, r2);
   }
-  return length(z) / abs(dr);
+  float box = length(z) / abs(dr);
+  float radius = 0.88 + 0.08 * sin(q.z * 1.4 + u_evolve * 0.2) + 0.05 * u_bass;
+  float tunnel = length(p.xy) - radius;
+  return max(max(box, -tunnel), 0.0007);
 }
 
 vec3 calcNormal(vec3 p) {
-  const vec2 e = vec2(0.0008, 0.0);
+  const vec2 e = vec2(0.0022, 0.0);
   float t;
   return normalize(vec3(
     de(p + e.xyy, t) - de(p - e.xyy, t),
@@ -35,43 +36,43 @@ vec3 calcNormal(vec3 p) {
 }
 
 vec3 scene(vec2 uv) {
-  // Slow orbit plus a long dolly that pushes in toward the surface and back out, so we
-  // travel through the (morphing) structure rather than circling a static shape.
-  float t = u_time * 0.06 + u_evolve * 0.15;
-  float radius = 2.7 + 0.35 * sin(u_evolve * 0.11) - 0.34 * u_bass - 0.08 * u_beat;
-  vec3 ro = radius * vec3(sin(t), 0.35 * sin(t * 0.6), cos(t));
+  float t = u_time * 0.045 + u_evolve * 0.11;
+  vec3 ro = vec3(
+    0.16 * sin(t * 0.9) + 0.08 * sin(t * 2.1),
+    0.12 * sin(t * 0.7),
+    -5.4 + mod(u_evolve * 0.35, 6.0)
+  );
   vec3 ta = vec3(
-    0.08 * u_mid * sin(u_evolve * 0.9),
-    0.06 * u_mid * cos(u_evolve * 0.7),
-    0.0
+    0.22 * sin(t * 1.15 + 0.7),
+    0.16 * sin(t * 0.8),
+    ro.z + 2.4
   );
 
   vec3 fwd = normalize(ta - ro);
   vec3 rt = normalize(cross(vec3(0.0, 1.0, 0.0), fwd));
   vec3 up = cross(fwd, rt);
-  uv += 0.006 * u_high * vec2(
+  uv += 0.0025 * u_high * vec2(
     sin(uv.y * 34.0 + u_time * 12.0),
     cos(uv.x * 33.0 - u_time * 11.0)
   );
-  vec3 rd = normalize(uv.x * rt + uv.y * up + 1.5 * fwd);
+  vec3 rd = normalize(uv.x * rt + uv.y * up + 1.55 * fwd);
 
-  float dist = 0.0;
+  float dist = 0.08;
   float trap = 1e10;
   float steps = 0.0;
   bool hit = false;
-  const int MAX = 110;
+  const int MAX = 128;
   for (int i = 0; i < MAX; i++) {
     vec3 pos = ro + rd * dist;
     float tr;
     float d = de(pos, tr);
-    if (d < 0.0008 * dist + 0.0006) { trap = tr; hit = true; break; }
-    if (dist > 9.0) break;
-    dist += d * 0.9;
+    if (d < 0.0018 * dist + 0.0022) { trap = tr; hit = true; break; }
+    if (dist > 15.0) break;
+    dist += d * 0.7;
     steps += 1.0;
   }
 
-  // Background: deep slowly-shifting palette wash so misses aren't flat black.
-  vec3 bg = palette(0.6 + u_evolve * 0.05) * (0.06 + 0.04 * uv.y);
+  vec3 bg = palette(0.6 + u_evolve * 0.05) * (0.045 + 0.035 * uv.y);
 
   if (!hit) return bg;
 
@@ -80,20 +81,17 @@ vec3 scene(vec2 uv) {
   vec3 lightDir = normalize(vec3(0.7, 0.9, -0.4));
 
   float diff = clamp(dot(n, lightDir), 0.0, 1.0);
-  float ao = 1.0 - steps / float(MAX);                       // cheap occlusion
-  float fres = pow(1.0 - clamp(dot(n, -rd), 0.0, 1.0), 3.0); // rim light
-  float fog = exp(-dist * 0.18);
+  float ao = clamp(1.0 - steps / float(MAX), 0.0, 1.0);
+  float fres = pow(1.0 - clamp(dot(n, -rd), 0.0, 1.0), 3.0);
+  float fog = exp(-dist * 0.15);
 
-  // Color from the orbit trap + position so structure reads clearly.
-  float ct = sqrt(trap) * 1.5 + length(pos) * 0.15 + u_paletteShift * 0.5 + u_evolve * 0.08;
+  float ct = sqrt(trap) * 0.72 + length(pos.xy) * 0.12 + pos.z * 0.035 + u_paletteShift * 0.45 + u_evolve * 0.06;
   vec3 base = palette(ct);
 
-  vec3 col = base * (0.18 + 0.9 * diff) * (0.4 + 0.6 * ao);
-  col += fres * palette(ct + 0.4) * 0.5;
-  float sparkle = pow(sin((pos.x + pos.y + pos.z) * 18.0 + u_time * 13.0) * 0.5 + 0.5, 6.0);
-  col *= 1.0 + 0.18 * u_high;
-  col *= 1.0 + 0.22 * u_beat + 0.1 * u_bass;
-  col += palette(ct + 0.75) * sparkle * u_high * 0.12;
+  vec3 col = base * (0.26 + 0.74 * diff) * (0.52 + 0.48 * ao);
+  col += fres * palette(ct + 0.4) * 0.24;
+  col *= 1.0 + 0.06 * u_high;
+  col *= 1.0 + 0.16 * u_beat + 0.08 * u_bass;
   col = mix(bg, col, fog);
   return col;
 }

@@ -1,6 +1,7 @@
-import { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useStore, Sensitivity } from "../state/store";
 import { SCENES, PALETTES } from "../gl/scenes";
+import { Renderer } from "../gl/Renderer";
 
 interface Props {
   onFile: (file: File) => void;
@@ -22,9 +23,47 @@ const BANDS: { key: keyof Sensitivity; label: string }[] = [
   { key: "beat", label: "Beat" },
 ];
 
+const THUMB_FEATURES = { bass: 0.42, mid: 0.34, high: 0.28, beat: 0.18, rms: 0.32 };
+
 export function Controls({ onFile, onTogglePlay, onSeek, onFullscreen }: Props) {
   const fileInput = useRef<HTMLInputElement>(null);
   const s = useStore();
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const canvas = document.createElement("canvas");
+    canvas.width = 112;
+    canvas.height = 80;
+
+    try {
+      const renderer = new Renderer(canvas);
+      renderer.resize(112, 80, 1);
+      const next: Record<string, string> = {};
+
+      for (const scene of SCENES) {
+        renderer.reset();
+        for (let i = 0; i < 24; i++) {
+          renderer.render(1 / 30, THUMB_FEATURES, {
+            sceneId: scene.id,
+            paletteId: s.paletteId,
+            speed: 1,
+            intensity: 1,
+            evolution: 1,
+          });
+        }
+        next[scene.id] = canvas.toDataURL("image/webp", 0.82);
+      }
+
+      if (!cancelled) setThumbs(next);
+    } catch (e) {
+      console.error("Could not render mode thumbnails", e);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [s.paletteId]);
 
   const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -50,6 +89,19 @@ export function Controls({ onFile, onTogglePlay, onSeek, onFullscreen }: Props) 
           hidden
         />
         {s.fileName && <div className="filename" title={s.fileName}>{s.fileName}</div>}
+      </section>
+
+      <section>
+        <label className="lbl" htmlFor="title-text">Title</label>
+        <input
+          id="title-text"
+          className="text-input"
+          type="text"
+          maxLength={32}
+          placeholder="FORGE"
+          value={s.titleText}
+          onChange={(e) => s.setTitleText(e.target.value)}
+        />
       </section>
 
       {s.hasAudio && (
@@ -81,6 +133,11 @@ export function Controls({ onFile, onTogglePlay, onSeek, onFullscreen }: Props) 
               onClick={() => s.setScene(scene.id)}
               title={scene.description}
             >
+              {thumbs[scene.id] ? (
+                <img className="mode-thumb" src={thumbs[scene.id]} alt="" aria-hidden="true" />
+              ) : (
+                <span className="mode-thumb loading" aria-hidden="true" />
+              )}
               {scene.name}
             </button>
           ))}

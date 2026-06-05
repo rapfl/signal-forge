@@ -138,7 +138,7 @@ export class Renderer {
     const kBass = 1 - Math.exp(-dt / 0.34);
     const kMid = 1 - Math.exp(-dt / 0.18);
     const kHigh = 1 - Math.exp(-dt / 0.055);
-    const kBeat = 1 - Math.exp(-dt / 0.08);
+    const kBeat = 1 - Math.exp(-dt / (raw.beat > this.sBeat ? 0.09 : 0.38));
     const kRms = 1 - Math.exp(-dt / 0.14);
     this.sBass += (sat(raw.bass) - this.sBass) * kBass;
     this.sMid += (sat(raw.mid) - this.sMid) * kMid;

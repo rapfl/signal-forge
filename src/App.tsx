@@ -13,6 +13,8 @@ export default function App() {
   const engineRef = useRef<AudioEngine | null>(null);
   const extractorRef = useRef<FeatureExtractor | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const hasAudio = useStore((s) => s.hasAudio);
+  const titleText = useStore((s) => s.titleText.trim());
 
   // Lazily create the audio engine on first interaction (autoplay policy friendly).
   const ensureEngine = (): AudioEngine => {
@@ -88,9 +90,10 @@ export default function App() {
           engineRef={engineRef}
           extractorRef={extractorRef}
         />
-        {!useStore((s) => s.hasAudio) && (
+        {hasAudio && titleText && <div className="stage-title">{titleText}</div>}
+        {!hasAudio && (
           <div className="overlay">
-            <h1>FORGE</h1>
+            <h1>{titleText || "FORGE"}</h1>
             <p>Upload a sound snippet and watch it bloom into fractals.</p>
           </div>
         )}

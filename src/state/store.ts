@@ -16,6 +16,7 @@ interface AppState {
   hasAudio: boolean;
 
   // visual params
+  titleText: string;
   sceneId: string;
   paletteId: string;
   speed: number;
@@ -34,6 +35,7 @@ interface AppState {
   exportMessage: string;
 
   setFile: (name: string, duration: number) => void;
+  setTitleText: (v: string) => void;
   setScene: (id: string) => void;
   setPalette: (id: string) => void;
   setSpeed: (v: number) => void;
@@ -49,6 +51,7 @@ export const useStore = create<AppState>((set) => ({
   fileName: null,
   hasAudio: false,
 
+  titleText: "",
   sceneId: SCENES[0].id,
   paletteId: PALETTES[0].id,
   speed: 1,
@@ -66,6 +69,7 @@ export const useStore = create<AppState>((set) => ({
 
   setFile: (name, duration) =>
     set({ fileName: name, hasAudio: true, duration, currentTime: 0, playing: false }),
+  setTitleText: (v) => set({ titleText: v }),
   setScene: (id) => set({ sceneId: id }),
   setPalette: (id) => set({ paletteId: id }),
   setSpeed: (v) => set({ speed: v }),
