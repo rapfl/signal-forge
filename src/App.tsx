@@ -124,6 +124,9 @@ export default function App() {
 
   return (
     <div className="app">
+      <a className="back-link" href="/" aria-label="Back to rahumusic.com">
+        Back
+      </a>
       <div className="stage" ref={stageRef}>
         <Visualizer
           canvasRef={canvasRef}
